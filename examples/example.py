@@ -1,6 +1,6 @@
 """
 # Using this Example:
- 
+
 Show top-level help
   $ python3 examples/example.py --help
 
@@ -12,23 +12,7 @@ Show subcommand help
   $ python3 examples/example.py sub help
 
 Basic subcommand usage
-  $ python3 examples/example.py sub -o "value" -f \
-      --input-file input.txt \
-      --input-directory ./data \
-      "John" 30 home work
-
-Using nested subcommand
-  $ python3 examples/example.py sub nested -nf \
-      -o "value" \
-      --input-file input.txt \
-      --input-directory ./data \
-      "John" 30 home work
-
-Using global flags
-  $ python3 examples/example.py -g sub -o "value" \
-      --input-file input.txt \
-      --input-directory ./data \
-      "John" 30 home work
+  $ python3 examples/example.py sub -o "value" -f "John" 30 home work
 
 Alternate command
   $ python3 examples/example.py alternate -a "something"
@@ -138,7 +122,7 @@ class Globals:
 # ---------------------------------------------------------------------------
 @cb.app("cranberry_cli_example")  # This can be replaced with __file__ for the filename.
 @cb.description("Example app showcasing Cranberry CLI features.")
-@cb.version("0.1.0", subcommand=True)
+@cb.version("0.0.1", subcommand=True)
 @cb.help(subcommand=True)
 @cb.subcommand(SubCommand, AlternateCommand)
 @cb.style("colorful")
@@ -151,23 +135,26 @@ def main():
     # ---------------------------------------------------------------------
     match ctx.command:
         case SubCommand() as cmd:
-            print("-> SubCommand\n")
-            print(f"option        = {cmd.option}")
-            print(f"flag          = {cmd.flag}")
-            print(f"file          = {cmd.file}")
-            print(f"directory     = {cmd.directory}")
-            print(f"name          = {cmd.name}")
-            print(f"age           = {cmd.age}")
-            print(f"locations     = {cmd.locations}")
-            print(f"nested_option = {cmd.nested_option}")
-
-            if cmd.subcommand:
-                print("\n→ NestedCommand")
-                print(f"nested_flag   = {cmd.subcommand.nested_flag}")
+            # TODO: This is a bit messy, therefore we need a better way to detect/display nested subcommands.
+            print("-> SubCommand")
+            try:
+                if cmd.subcommand:
+                    if cmd.subcommand:
+                        print("  -> NestedCommand")
+                        print(f"    nested_flag   = {cmd.subcommand.nested_flag}")
+            except Exception:
+                print(f"  option        = {cmd.option}")
+                print(f"  flag          = {cmd.flag}")
+                print(f"  file          = {cmd.file}")
+                print(f"  directory     = {cmd.directory}")
+                print(f"  name          = {cmd.name}")
+                print(f"  age           = {cmd.age}")
+                print(f"  locations     = {cmd.locations}")
+                print(f"  nested_option = {cmd.nested_option}")
 
         case AlternateCommand() as cmd:
             print("-> AlternateCommand\n")
-            print(f"alternate_option = {cmd.alternate_option}")
+            print(f"  alternate_option = {cmd.alternate_option}")
 
         case None:
             print("-> No subcommand provided")

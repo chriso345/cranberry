@@ -4,9 +4,11 @@ Cranberry help text renderer.
 
 from __future__ import annotations
 
+import sys
 from typing import Any
 
 from cranberry.fields import FieldSpec
+from cranberry.errors import CranberryParseError
 from cranberry.style import Style
 
 
@@ -237,6 +239,25 @@ def render_help(
         lines.append("")
 
     return "\n".join(lines).rstrip() + "\n"
+
+
+def render_version(app_name: str, version_cfg: dict[str, Any], style: Style) -> str:
+    """Build and return the version string."""
+    ver = version_cfg.get("ver", True)
+    if ver is True:
+        try:
+            import importlib.metadata
+
+            ver = importlib.metadata.version(app_name)
+        except Exception as _:
+            ver = "UNKNOWN"
+    elif isinstance(ver, str):
+        pass
+    else:
+        raise CranberryParseError(f"Invalid version configuration: {ver!r}")
+
+    sys.stdout.write(f"{style.app_name(app_name)} {style.version(ver)}\n")
+    sys.exit(0)
 
 
 # ---------------------------------------------------------------------------
