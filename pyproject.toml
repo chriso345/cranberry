@@ -3,12 +3,37 @@ name = "cranberry"
 version = "0.0.1"
 description = "Add your description here"
 readme = "README.md"
-authors = [
-    { name = "Chris O" }
-]
+authors = [{ name = "Chris O" }]
 requires-python = ">=3.12"
 dependencies = []
 
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = ["pyrefly>=0.63.1", "pytest>=9.0.3", "pytest-cov>=7.1.0", "ruff>=0.15.12"]
+
+[tool.pyrefly]
+project-excludes = [
+  "**/tests",
+  "**/tests/**/*",
+  ".venv",
+  ".venv/**/*",
+  "build",
+  "dist",
+  "docs",
+  "docs/**/*",
+]
+python-version = "3.12.0"
+infer-with-first-use = false
+
+[tool.ruff]
+line-length = 88
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--cov=cranberry --cov-report=term-missing --cov-report=html"
+
+[tool.coverage.run]
+source = ["cranberry"]

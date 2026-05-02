@@ -138,10 +138,10 @@ def main():
             # TODO: This is a bit messy, therefore we need a better way to detect/display nested subcommands.
             print("-> SubCommand")
             try:
-                if cmd.subcommand:
+                if cmd.subcommand:  # pyrefly: ignore[missing-attribute]
                     if cmd.subcommand:
                         print("  -> NestedCommand")
-                        print(f"    nested_flag   = {cmd.subcommand.nested_flag}")
+                        print(f"    nested_flag   = {cmd.subcommand.nested_flag}")  # pyrefly: ignore[missing-attribute]
             except Exception:
                 print(f"  option        = {cmd.option}")
                 print(f"  flag          = {cmd.flag}")
@@ -159,7 +159,8 @@ def main():
         case None:
             print("-> No subcommand provided")
 
-    print(f"\nglobal_flag = {ctx.global_flag}")
+    # TODO: This is a bit messy as it is dynamically added to the context.
+    print(f"\nglobal_flag = {ctx.global_flag}")  # pyrefly: ignore[missing-attribute]
 
 
 # ---------------------------------------------------------------------------

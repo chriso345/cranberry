@@ -6,7 +6,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-
 # ---------------------------------------------------------------------------
 # ANSI helpers
 # ---------------------------------------------------------------------------
@@ -183,7 +182,7 @@ _BUILTIN_STYLES: dict[str, type[Style]] = {
 }
 
 
-def resolve_style(value: str | type[Style] | None) -> Style:
+def resolve_style(value: str | type[Style] | None) -> Style:  # pyrefly: ignore[bad-return]
     """
     Convert the ``@cb.style(...)`` argument into a :class:`Style` instance.
 
@@ -203,7 +202,7 @@ def resolve_style(value: str | type[Style] | None) -> Style:
             panic(
                 f"Unknown style {value!r}. Choose one of: {', '.join(_BUILTIN_STYLES)}"
             )
-        return cls()
+        return cls()  # pyrefly: ignore[not-callable]
     if isinstance(value, type) and issubclass(value, Style):
         return value()
     from cranberry.errors import panic
