@@ -130,6 +130,47 @@ class TestSections:
         result = make_help(has_version_flag=True)
         assert "--version" in result
 
+    def test_description_appears_before_sections(self):
+        result = make_help(description="My description")
+
+        # Description should appear in output
+        assert "My description" in result
+
+        # It should appear near the top (before Flags/Commands if present)
+        desc_index = result.index("My description")
+
+        if "Flags:" in result:
+            assert desc_index < result.index("Flags:")
+
+        if "Commands:" in result:
+            assert desc_index < result.index("Commands:")
+
+    def test_description_is_not_modified(self):
+        result = make_help(description="Simple description text")
+        assert "Simple description text" in result
+
+    def test_description_with_full_help_layout(self):
+        @cb.command("sub")
+        class Sub:
+            pass
+
+        gf = {"flag": cb.flag("-g", "--global")}
+
+        result = make_help(
+            description="CLI tool description",
+            global_fields=gf,
+            subcommands=[Sub],
+            footer_msg="Footer text",
+        )
+
+        # All major sections exist
+        assert "CLI tool description" in result
+        assert "Global Options:" in result
+        assert "Commands:" in result
+        assert "Footer text" in result
+
+        # Description should appear early in the output
+        assert result.index("CLI tool description") < result.index("Commands:")
 
 # ---------------------------------------------------------------------------
 # _strip_ansi
