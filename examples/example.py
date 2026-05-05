@@ -75,7 +75,8 @@ class NestedCommand:
 class SubCommand(FlattenedNested):
     # Options / flags
     option: str = cb.option("-o", "--option", help="A simple option")
-    flag: bool = cb.flag("-f", "--flag", help="A boolean flag")
+    flag: bool = cb.flag("-f", "--flag", help="A boolean flag", stackable=True)
+    flag2: bool = cb.flag("-F", "--flag2", help="Another boolean flag", stackable=True)
 
     # File / directory inputs
     file: str = cb.file(

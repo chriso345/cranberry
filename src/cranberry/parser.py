@@ -211,6 +211,31 @@ def _parse_leaf_command(
             i += 2
             continue
 
+        # Combined short flags allowed for stackable boolean flags (e.g. -fs -> -f and -s) - only if all are valid flags.
+        if token.startswith("-") and not token.startswith("--") and len(token) > 2:
+            # Attempt to decompose into multiple short flags
+            j = 1
+            short_flags: list[str] = []
+            ok = True
+            while j < len(token):
+                short = "-" + token[j]
+                entry = flag_map.get(short)
+                if (
+                    entry is None
+                    or entry[1].kind != "flag"
+                    or entry[1].stackable is False
+                ):
+                    ok = False
+                    break
+                short_flags.append(short)
+                j += 1
+            if ok and short_flags:
+                for short in short_flags:
+                    attr, spec = flag_map[short]
+                    values[attr] = True
+                i += 1
+                continue
+
         if token.startswith("-"):
             raise CranberryParseError(f"Unknown flag: {token!r}")
 
@@ -298,9 +323,30 @@ def parse_args(argv: list[str] | None = None) -> ParseContext:
             else:
                 global_values[attr] = _coerce(argv[i + 1], spec, attr)
                 i += 2
-        else:
-            stripped.append(t)
-            i += 1
+            continue
+
+        # Combined short flags for globals (e.g., -fF -> -f and -F) - only allowed for boolean flags
+        if t.startswith("-") and not t.startswith("--") and len(t) > 2:
+            j = 1
+            short_flags = []
+            ok = True
+            while j < len(t):
+                short = "-" + t[j]
+                entry = global_map.get(short)
+                if entry is None or entry[1].kind != "flag":
+                    ok = False
+                    break
+                short_flags.append(short)
+                j += 1
+            if ok and short_flags:
+                for short in short_flags:
+                    attr, spec = global_map[short]
+                    global_values[attr] = True
+                i += 1
+                continue
+
+        stripped.append(t)
+        i += 1
 
     for n, s in global_fields.items():
         global_values.setdefault(n, s.default)

@@ -47,6 +47,7 @@ class FieldSpec:
     long: str | None = None
     help: str = ""
     default: Any = field(default_factory=lambda: None)
+    stackable: bool = False  # for flags only
     type: Any = None  # filled in by registry from the class annotation
     required: bool = (
         False  # for args, this is just a convenience property based on default
@@ -120,6 +121,7 @@ def flag(
     *,
     help: str = "",
     default: bool = False,
+    stackable: bool = False,
 ) -> Any:
     """Declare a boolean flag that stores *True* when present (``-f`` / ``--flag``)."""
     return FieldSpec(
@@ -128,6 +130,7 @@ def flag(
         long=long,
         help=help,
         default=default,
+        stackable=stackable,
         type=bool,
     )
 
