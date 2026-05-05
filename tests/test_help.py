@@ -172,6 +172,7 @@ class TestSections:
         # Description should appear early in the output
         assert result.index("CLI tool description") < result.index("Commands:")
 
+
 # ---------------------------------------------------------------------------
 # _strip_ansi
 # ---------------------------------------------------------------------------

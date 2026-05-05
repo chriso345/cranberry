@@ -144,21 +144,21 @@ def main():
                         print("  -> NestedCommand")
                         print(f"    nested_flag   = {cmd.subcommand.nested_flag}")  # pyrefly: ignore[missing-attribute]
             except Exception:
-                print(f"  option        = {cmd.option}")
-                print(f"  flag          = {cmd.flag}")
-                print(f"  file          = {cmd.file}")
-                print(f"  directory     = {cmd.directory}")
-                print(f"  name          = {cmd.name}")
-                print(f"  age           = {cmd.age}")
-                print(f"  locations     = {cmd.locations}")
-                print(f"  nested_option = {cmd.nested_option}")
+                print(f"    option        = {cmd.option}")
+                print(f"    flag          = {cmd.flag}")
+                print(f"    file          = {cmd.file}")
+                print(f"    directory     = {cmd.directory}")
+                print(f"    name          = {cmd.name}")
+                print(f"    age           = {cmd.age}")
+                print(f"    locations     = {cmd.locations}")
+                print(f"    nested_option = {cmd.nested_option}")
 
         case AlternateCommand() as cmd:
-            print("-> AlternateCommand\n")
-            print(f"  alternate_option = {cmd.alternate_option}")
+            print("-> AlternateCommand")
+            print(f"    alternate_option = {cmd.alternate_option}")
 
         case None:
-            print("-> No subcommand provided")
+            print(ctx.help())
 
     # TODO: This is a bit messy as it is dynamically added to the context.
     print(f"\nglobal_flag = {ctx.global_flag}")  # pyrefly: ignore[missing-attribute]
