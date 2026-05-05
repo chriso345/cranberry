@@ -450,6 +450,43 @@ class TestVersionFlag:
 
 
 # ---------------------------------------------------------------------------
+# Combined short flags
+# ---------------------------------------------------------------------------
+class TestParseStackableFlags:
+    def test_combined_short_flags_fs(self, capsys):
+        @cb.command("c")
+        class C:
+            first: bool = cb.flag("-f", "--flag", stackable=True)
+            second: bool = cb.flag("-s", "--second", stackable=True)
+
+        make_app(C)
+        ctx = cb.parse_args(["c", "-fs"])
+        assert ctx.command.first is True
+        assert ctx.command.second is True
+
+    def test_combined_short_flags_sf(self, capsys):
+        @cb.command("c2")
+        class C2:
+            first: bool = cb.flag("-f", "--flag", stackable=True)
+            second: bool = cb.flag("-s", "--second", stackable=True)
+
+        make_app(C2)
+        ctx = cb.parse_args(["c2", "-sf"])
+        assert ctx.command.first is True
+        assert ctx.command.second is True
+
+    def test_non_stackable_flag_combined_raises(self, capsys):
+        @cb.command("c3")
+        class C3:
+            first: bool = cb.flag("-f", "--flag", stackable=False)
+            second: bool = cb.flag("-s", "--second", stackable=True)
+
+        make_app(C3)
+        with pytest.raises(CranberryParseError, match="Unknown flag: '-fs'"):
+            cb.parse_args(["c3", "-fs"])
+
+
+# ---------------------------------------------------------------------------
 # ParseContext repr and globals
 # ---------------------------------------------------------------------------
 class TestParseContext:
