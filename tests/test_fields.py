@@ -65,6 +65,16 @@ class TestOptionFactory:
         spec = cb.option("-o", "--opt", validate=v)
         assert spec.validate is v
 
+    def test_none_short(self):
+        spec = cb.option(None, "--opt")
+        assert spec.short is None
+        assert spec.long is not None
+
+    def test_none_long(self):
+        spec = cb.option("--opt", None)
+        assert spec.short is not None
+        assert spec.long is None
+
 
 # ---------------------------------------------------------------------------
 # flag()
@@ -81,6 +91,22 @@ class TestFlagFactory:
 
     def test_default_true(self):
         assert cb.flag("-f", "--flag", default=True).default is True
+
+    def test_stackable_false(self):
+        assert cb.flag("-f", "--flag").stackable is False
+
+    def test_stackable_true(self):
+        assert cb.flag("-f", "--flag", stackable=True).stackable is True
+
+    def test_none_short(self):
+        spec = cb.flag(None, "--flag")
+        assert spec.short is None
+        assert spec.long is not None
+
+    def test_none_long(self):
+        spec = cb.flag("--flag", None)
+        assert spec.short is not None
+        assert spec.long is None
 
 
 # ---------------------------------------------------------------------------
@@ -104,6 +130,10 @@ class TestArgFactory:
 
     def test_enforce_count_true(self):
         assert cb.arg(enforce_count=True).enforce_count is True
+
+    def test_type(self):
+        assert cb.arg(type=int).type is int
+        assert cb.arg(type=str).type is str
 
 
 # ---------------------------------------------------------------------------

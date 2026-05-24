@@ -93,8 +93,8 @@ class FieldSpec:
 # Public factory functions
 # ---------------------------------------------------------------------------
 def option(
-    short: str,
-    long: str,
+    short: str | None,
+    long: str | None,
     *,
     help: str = "",
     default: Any = None,
@@ -116,8 +116,8 @@ def option(
 
 
 def flag(
-    short: str,
-    long: str,
+    short: str | None,
+    long: str | None,
     *,
     help: str = "",
     default: bool = False,
@@ -159,8 +159,8 @@ def arg(
 
 
 def file(
-    short: str,
-    long: str,
+    short: str | None,
+    long: str | None,
     *,
     help: str = "",
     default: Any = None,
@@ -183,8 +183,8 @@ def file(
 
 
 def dir(
-    short: str,
-    long: str,
+    short: str | None,
+    long: str | None,
     *,
     help: str = "",
     default: Any = None,
