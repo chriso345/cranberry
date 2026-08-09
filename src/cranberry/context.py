@@ -44,10 +44,10 @@ class ParseContext:
         """
         # Local imports to avoid circular import at module import time.
         from cranberry import parser as _parser_module
-        from cranberry.style import resolve_style
-        from cranberry.registry import collect_fields
-        from cranberry.help_ import render_help, _cmd_name
         from cranberry.errors import panic
+        from cranberry.help_ import _cmd_name, render_help
+        from cranberry.registry import collect_fields
+        from cranberry.style import resolve_style
 
         if _parser_module._app_fn is None:
             panic("No app entry-point registered")
@@ -107,9 +107,9 @@ class ParseContext:
         if (
             not isinstance(command, type)
             and hasattr(command, "subcommand")
-            and getattr(command, "subcommand") is not None
+            and command.subcommand is not None
         ):
-            target_cls = type(getattr(command, "subcommand"))
+            target_cls = type(command.subcommand)
             parent_command = _cmd_name(type(command))
         else:
             target_cls = command if isinstance(command, type) else type(command)

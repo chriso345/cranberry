@@ -3,6 +3,7 @@ Tests for cranberry.errors
 """
 
 import pytest
+
 from cranberry.errors import CranberryPanic, CranberryParseError, panic
 
 

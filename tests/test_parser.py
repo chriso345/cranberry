@@ -3,14 +3,12 @@ Tests for cranberry.parser
 """
 
 import pytest
+
 import cranberry as cb
-from cranberry.errors import CranberryParseError, CranberryPanic
 from cranberry import parser as _parser_module
+from cranberry.errors import CranberryPanic, CranberryParseError
 
 
-# ---------------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------------
 def make_app(
     *subcommand_classes,
     name="test-app",
@@ -43,9 +41,6 @@ def make_app(
     return main
 
 
-# ---------------------------------------------------------------------------
-# No subcommands - trivial app
-# ---------------------------------------------------------------------------
 class TestNoSubcommands:
     def test_no_args_returns_none_command(self):
         make_app()
@@ -57,9 +52,6 @@ class TestNoSubcommands:
             _parser_module.parse_args([])
 
 
-# ---------------------------------------------------------------------------
-# Subcommand dispatch
-# ---------------------------------------------------------------------------
 class TestSubcommandDispatch:
     def setup_method(self):
         @cb.command("greet")
@@ -86,9 +78,6 @@ class TestSubcommandDispatch:
         assert ctx.command is None
 
 
-# ---------------------------------------------------------------------------
-# Options and flags
-# ---------------------------------------------------------------------------
 class TestOptionsAndFlags:
     def setup_method(self):
         @cb.command("process")
@@ -132,9 +121,6 @@ class TestOptionsAndFlags:
             cb.parse_args(["process", "-o"])
 
 
-# ---------------------------------------------------------------------------
-# Type coercion
-# ---------------------------------------------------------------------------
 class TestTypeCoercion:
     def setup_method(self):
         @cb.command("calc")
@@ -159,9 +145,6 @@ class TestTypeCoercion:
             cb.parse_args(["calc", "-c", "not-a-number"])
 
 
-# ---------------------------------------------------------------------------
-# Enum field
-# ---------------------------------------------------------------------------
 class TestEnumField:
     def setup_method(self):
         @cb.enum(strict=True)
@@ -208,9 +191,6 @@ class TestEnumField:
             cb.parse_args(["run3", "--mode", "delete"])
 
 
-# ---------------------------------------------------------------------------
-# Positional args - count
-# ---------------------------------------------------------------------------
 class TestPositionalArgs:
     def test_single_positional(self):
         @cb.command("greet")
@@ -258,9 +238,6 @@ class TestPositionalArgs:
         assert ctx.command.name == "World"
 
 
-# ---------------------------------------------------------------------------
-# Validation
-# ---------------------------------------------------------------------------
 class TestValidation:
     def test_validate_passes(self):
         @cb.command("check")
@@ -291,9 +268,6 @@ class TestValidation:
             cb.parse_args(["check", "-a", "-5"])
 
 
-# ---------------------------------------------------------------------------
-# File / dir existence checking
-# ---------------------------------------------------------------------------
 class TestFileAndDirExistence:
     def test_file_exists_passes(self, tmp_path):
         f = tmp_path / "data.txt"
@@ -335,9 +309,6 @@ class TestFileAndDirExistence:
             cb.parse_args(["scan", "-d", str(tmp_path / "missing_dir")])
 
 
-# ---------------------------------------------------------------------------
-# Global options
-# ---------------------------------------------------------------------------
 class TestGlobalOptions:
     def setup_method(self):
         @cb.globals()
@@ -369,9 +340,6 @@ class TestGlobalOptions:
         assert hasattr(ctx, "verbose")
 
 
-# ---------------------------------------------------------------------------
-# Nested subcommands
-# ---------------------------------------------------------------------------
 class TestNestedSubcommands:
     def setup_method(self):
         @cb.command("leaf")
@@ -398,9 +366,6 @@ class TestNestedSubcommands:
         assert ctx.command.subcommand.data == "hello"
 
 
-# ---------------------------------------------------------------------------
-# Help flag triggers SystemExit
-# ---------------------------------------------------------------------------
 class TestHelpFlag:
     def test_help_flag_exits(self, capsys):
         make_app(help_flag=True)
@@ -426,9 +391,6 @@ class TestHelpFlag:
         assert "Usage:" in captured.out
 
 
-# ---------------------------------------------------------------------------
-# Version flag triggers SystemExit
-# ---------------------------------------------------------------------------
 class TestVersionFlag:
     def test_version_flag_exits(self, capsys):
         make_app(version_str="2.3.4")
@@ -449,9 +411,6 @@ class TestVersionFlag:
             cb.parse_args(["-V"])
 
 
-# ---------------------------------------------------------------------------
-# Combined short flags
-# ---------------------------------------------------------------------------
 class TestParseStackableFlags:
     def test_combined_short_flags_fs(self, capsys):
         @cb.command("c")
@@ -486,9 +445,6 @@ class TestParseStackableFlags:
             cb.parse_args(["c3", "-fs"])
 
 
-# ---------------------------------------------------------------------------
-# ParseContext repr and globals
-# ---------------------------------------------------------------------------
 class TestParseContext:
     def test_repr_contains_command(self):
         make_app()

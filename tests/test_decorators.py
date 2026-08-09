@@ -6,9 +6,6 @@ import cranberry as cb
 from cranberry import parser as _parser_module
 
 
-# ---------------------------------------------------------------------------
-# @cb.command
-# ---------------------------------------------------------------------------
 class TestCommandDecorator:
     def test_sets_name(self):
         @cb.command("my-cmd")
@@ -32,9 +29,6 @@ class TestCommandDecorator:
         assert MyCmd.__cb_meta__["subcommands"] == []
 
 
-# ---------------------------------------------------------------------------
-# @cb.subcommand
-# ---------------------------------------------------------------------------
 class TestSubcommandDecorator:
     def test_registers_single_subcommand(self):
         @cb.command("child")
@@ -84,9 +78,6 @@ class TestSubcommandDecorator:
         assert B in Parent.__cb_meta__["subcommands"]
 
 
-# ---------------------------------------------------------------------------
-# @cb.description
-# ---------------------------------------------------------------------------
 class TestDescriptionDecorator:
     def test_sets_description(self):
         @cb.command("cmd")
@@ -97,9 +88,6 @@ class TestDescriptionDecorator:
         assert Cmd.__cb_meta__["description"] == "A command description."
 
 
-# ---------------------------------------------------------------------------
-# @cb.help / @cb.no_help
-# ---------------------------------------------------------------------------
 class TestHelpDecorator:
     def test_default_flag_true(self):
         @cb.app("test-app")
@@ -135,9 +123,6 @@ class TestHelpDecorator:
         assert main.__cb_meta__["help"]["subcommand"] is False
 
 
-# ---------------------------------------------------------------------------
-# @cb.version
-# ---------------------------------------------------------------------------
 class TestVersionDecorator:
     def test_literal_version(self):
         @cb.app("test-app")
@@ -164,9 +149,6 @@ class TestVersionDecorator:
         assert main.__cb_meta__["version"]["subcommand"] is False
 
 
-# ---------------------------------------------------------------------------
-# @cb.style
-# ---------------------------------------------------------------------------
 class TestStyleDecorator:
     def test_string_style_stored(self):
         @cb.app("test-app")
@@ -177,9 +159,6 @@ class TestStyleDecorator:
         assert main.__cb_meta__["style"] == "colorful"
 
 
-# ---------------------------------------------------------------------------
-# @cb.footer
-# ---------------------------------------------------------------------------
 class TestFooterDecorator:
     def test_footer_stored(self):
         @cb.app("test-app")
@@ -190,9 +169,6 @@ class TestFooterDecorator:
         assert main.__cb_meta__["footer_message"] == "Made with love."
 
 
-# ---------------------------------------------------------------------------
-# @cb.app
-# ---------------------------------------------------------------------------
 class TestAppDecorator:
     def test_registers_app_fn(self):
         @cb.app("my-app")
@@ -216,9 +192,6 @@ class TestAppDecorator:
         assert main.__cb_meta__["type"] == "app"
 
 
-# ---------------------------------------------------------------------------
-# @cb.globals
-# ---------------------------------------------------------------------------
 class TestGlobalsDecorator:
     def test_registers_globals_cls(self):
         @cb.globals()

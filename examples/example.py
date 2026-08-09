@@ -41,9 +41,6 @@ Show version
 import cranberry as cb
 
 
-# ---------------------------------------------------------------------------
-# Shared / reusable components
-# ---------------------------------------------------------------------------
 class FlattenedNested:
     """Fields mixed directly into parent commands."""
 
@@ -60,9 +57,6 @@ class Location:
     WORK = "work"
 
 
-# ---------------------------------------------------------------------------
-# Commands
-# ---------------------------------------------------------------------------
 @cb.command("nested")
 @cb.description("A nested subcommand (not flattened).")
 class NestedCommand:
@@ -108,9 +102,6 @@ class AlternateCommand:
     )
 
 
-# ---------------------------------------------------------------------------
-# Global options
-# ---------------------------------------------------------------------------
 @cb.globals()
 class Globals:
     global_flag: bool = cb.flag(
@@ -118,9 +109,6 @@ class Globals:
     )
 
 
-# ---------------------------------------------------------------------------
-# App entrypoint
-# ---------------------------------------------------------------------------
 @cb.app("cranberry_cli_example")  # This can be replaced with __file__ for the filename.
 @cb.description("Example app showcasing Cranberry CLI features.")
 @cb.version("0.0.1", subcommand=True)
@@ -131,19 +119,17 @@ class Globals:
 def main():
     ctx = cb.parse_args()
 
-    # ---------------------------------------------------------------------
     # Dispatch
-    # ---------------------------------------------------------------------
     match ctx.command:
         case SubCommand() as cmd:
             # TODO: This is a bit messy, therefore we need a better way to detect/display nested subcommands.
             print("-> SubCommand")
             try:
-                if cmd.subcommand:  # pyrefly: ignore[missing-attribute]
+                if cmd.subcommand:  # pyrefly: ignore[missing-attribute]  # noqa: SIM102
                     if cmd.subcommand:
                         print("  -> NestedCommand")
                         print(f"    nested_flag   = {cmd.subcommand.nested_flag}")  # pyrefly: ignore[missing-attribute]
-            except Exception:
+            except Exception as _:  # noqa: BLE001
                 print(f"    option        = {cmd.option}")
                 print(f"    flag          = {cmd.flag}")
                 print(f"    file          = {cmd.file}")
@@ -164,8 +150,5 @@ def main():
     print(f"\nglobal_flag = {ctx.global_flag}")  # pyrefly: ignore[missing-attribute]
 
 
-# ---------------------------------------------------------------------------
-# Entry point
-# ---------------------------------------------------------------------------
 if __name__ == "__main__":
     main()

@@ -6,9 +6,6 @@ import cranberry as cb
 from cranberry.fields import FieldSpec
 
 
-# ---------------------------------------------------------------------------
-# FieldSpec properties
-# ---------------------------------------------------------------------------
 class TestFieldSpecProperties:
     def test_dest_from_long(self):
         spec = cb.option("-o", "--output-file")
@@ -39,9 +36,6 @@ class TestFieldSpecProperties:
         assert spec.is_required is False
 
 
-# ---------------------------------------------------------------------------
-# option()
-# ---------------------------------------------------------------------------
 class TestOptionFactory:
     def test_kind(self):
         assert cb.option("-o", "--opt").kind == "option"
@@ -76,9 +70,6 @@ class TestOptionFactory:
         assert spec.long is None
 
 
-# ---------------------------------------------------------------------------
-# flag()
-# ---------------------------------------------------------------------------
 class TestFlagFactory:
     def test_kind(self):
         assert cb.flag("-f", "--flag").kind == "flag"
@@ -109,9 +100,6 @@ class TestFlagFactory:
         assert spec.long is None
 
 
-# ---------------------------------------------------------------------------
-# arg()
-# ---------------------------------------------------------------------------
 class TestArgFactory:
     def test_kind(self):
         assert cb.arg().kind == "arg"
@@ -136,9 +124,6 @@ class TestArgFactory:
         assert cb.arg(type=str).type is str
 
 
-# ---------------------------------------------------------------------------
-# file()
-# ---------------------------------------------------------------------------
 class TestFileFactory:
     def test_kind(self):
         assert cb.file("-f", "--file").kind == "file"
@@ -153,9 +138,6 @@ class TestFileFactory:
         assert cb.file("-f", "--file", exists=True).exists is True
 
 
-# ---------------------------------------------------------------------------
-# dir()
-# ---------------------------------------------------------------------------
 class TestDirFactory:
     def test_kind(self):
         assert cb.dir("-d", "--dir").kind == "dir"

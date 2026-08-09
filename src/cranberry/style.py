@@ -6,9 +6,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-# ---------------------------------------------------------------------------
-# ANSI helpers
-# ---------------------------------------------------------------------------
 _RESET = "\033[0m"
 
 
@@ -28,9 +25,6 @@ def fg(r: int, g: int, b: int, text: str) -> str:
     return f"\033[38;2;{r};{g};{b}m{text}{_RESET}"
 
 
-# ---------------------------------------------------------------------------
-# Base style
-# ---------------------------------------------------------------------------
 @dataclass
 class Style:
     """
@@ -92,18 +86,12 @@ class Style:
         return text
 
 
-# ---------------------------------------------------------------------------
-# Plain style (no colour)
-# ---------------------------------------------------------------------------
 class PlainStyle(Style):
     """No ANSI codes; suitable for terminals without colour support."""
 
-    pass  # inherits all no-op defaults
+    pass  # inherits all no-op defaults  # noqa: PIE790
 
 
-# ---------------------------------------------------------------------------
-# Colorful style
-# ---------------------------------------------------------------------------
 class ColorfulStyle(Style):
     """Tasteful colour accents using ANSI 256/true-colour codes."""
 
@@ -138,9 +126,6 @@ class ColorfulStyle(Style):
         return fg(160, 160, 160, text)
 
 
-# ---------------------------------------------------------------------------
-# Fancy style
-# ---------------------------------------------------------------------------
 class FancyStyle(Style):
     """A richer palette with bolder headings."""
 
@@ -172,9 +157,6 @@ class FancyStyle(Style):
         return fg(180, 180, 180, text)
 
 
-# ---------------------------------------------------------------------------
-# Registry
-# ---------------------------------------------------------------------------
 _BUILTIN_STYLES: dict[str, type[Style]] = {
     "plain": PlainStyle,
     "colorful": ColorfulStyle,

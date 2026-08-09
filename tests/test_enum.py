@@ -3,13 +3,11 @@ Tests for cranberry.enum
 """
 
 import pytest
+
 import cranberry as cb
 from cranberry.errors import CranberryPanic
 
 
-# ---------------------------------------------------------------------------
-# Fixtures
-# ---------------------------------------------------------------------------
 @cb.enum(strict=True)
 class Color:
     RED = "red"
@@ -23,9 +21,6 @@ class Direction:
     SOUTH = "south"
 
 
-# ---------------------------------------------------------------------------
-# Decorator creates the class correctly
-# ---------------------------------------------------------------------------
 class TestEnumDecoratorStructure:
     def test_members_populated(self):
         assert Color._members == {"RED": "red", "GREEN": "green", "BLUE": "blue"}
@@ -53,9 +48,6 @@ class TestEnumDecoratorStructure:
         assert issubclass(Color, CranberryEnum)
 
 
-# ---------------------------------------------------------------------------
-# from_value - strict mode
-# ---------------------------------------------------------------------------
 class TestFromValueStrict:
     def test_valid_value_returns_instance(self):
         instance = Color.from_value("red")
@@ -74,9 +66,6 @@ class TestFromValueStrict:
             Color.from_value("purple")
 
 
-# ---------------------------------------------------------------------------
-# from_value - non-strict mode
-# ---------------------------------------------------------------------------
 class TestFromValueNonStrict:
     def test_known_value_works(self):
         assert str(Direction.from_value("north")) == "north"
@@ -91,9 +80,6 @@ class TestFromValueNonStrict:
         assert isinstance(Direction.from_value("east"), CranberryEnum)
 
 
-# ---------------------------------------------------------------------------
-# Dunder methods
-# ---------------------------------------------------------------------------
 class TestCranberryEnumDunders:
     def test_repr(self):
         c = Color.from_value("red")
@@ -116,7 +102,7 @@ class TestCranberryEnumDunders:
     def test_eq_enum_to_str(self):
         c = Color.from_value("red")
         assert c == "red"
-        assert "red" == c  # noqa: SIM300 (intentional symmetry check)
+        assert "red" == c
 
     def test_neq_enum_to_str(self):
         c = Color.from_value("red")
@@ -137,9 +123,6 @@ class TestCranberryEnumDunders:
         assert d[Color.from_value("blue")] == "value"
 
 
-# ---------------------------------------------------------------------------
-# Decorator error conditions
-# ---------------------------------------------------------------------------
 class TestEnumDecoratorErrors:
     def test_no_members_panics(self):
         with pytest.raises(CranberryPanic, match="no string members"):

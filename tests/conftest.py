@@ -3,6 +3,7 @@ Shared pytest fixtures for the Cranberry test suite.
 """
 
 import pytest
+
 from cranberry import parser as _parser_module
 
 

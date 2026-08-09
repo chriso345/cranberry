@@ -24,13 +24,11 @@ class CranberryEnum:
     def __init__(self, value: str) -> None:
         self._value = value
 
-    # ------------------------------------------------------------------
     # Construction
-    # ------------------------------------------------------------------
     @classmethod
-    def from_value(cls, raw: str) -> "CranberryEnum":
+    def from_value(cls, raw: str) -> CranberryEnum:
         """Coerce a raw string into an enum member."""
-        for attr, member_value in cls._members.items():
+        for member_value in cls._members.values():
             if member_value == raw:
                 instance = cls.__new__(cls)
                 instance._value = member_value
@@ -46,9 +44,7 @@ class CranberryEnum:
             f"Invalid value {raw!r} for {cls.__name__}. Valid values: {valid}"
         )
 
-    # ------------------------------------------------------------------
     # Dunder helpers
-    # ------------------------------------------------------------------
     def __repr__(self) -> str:
         return f"{type(self).__name__}({self._value!r})"
 

@@ -3,22 +3,20 @@ Tests for cranberry.style
 """
 
 import pytest
+
+from cranberry.errors import CranberryPanic
 from cranberry.style import (
-    Style,
-    PlainStyle,
     ColorfulStyle,
     FancyStyle,
-    resolve_style,
+    PlainStyle,
+    Style,
     bold,
     dim,
     fg,
+    resolve_style,
 )
-from cranberry.errors import CranberryPanic
 
 
-# ---------------------------------------------------------------------------
-# ANSI helpers
-# ---------------------------------------------------------------------------
 class TestAnsiHelpers:
     def test_bold_wraps_text(self):
         result = bold("hello")
@@ -36,9 +34,6 @@ class TestAnsiHelpers:
         assert "255" in result
 
 
-# ---------------------------------------------------------------------------
-# PlainStyle - no-op pass-through
-# ---------------------------------------------------------------------------
 class TestPlainStyle:
     def setup_method(self):
         self.style = PlainStyle()
@@ -77,9 +72,6 @@ class TestPlainStyle:
         assert self.style.version("1.0.0") == "1.0.0"
 
 
-# ---------------------------------------------------------------------------
-# ColorfulStyle - adds ANSI codes
-# ---------------------------------------------------------------------------
 class TestColorfulStyle:
     def setup_method(self):
         self.style = ColorfulStyle()
@@ -121,9 +113,6 @@ class TestColorfulStyle:
         assert self.style.description("desc") == "desc"
 
 
-# ---------------------------------------------------------------------------
-# FancyStyle - bold+underline headings etc.
-# ---------------------------------------------------------------------------
 class TestFancyStyle:
     def setup_method(self):
         self.style = FancyStyle()
@@ -142,9 +131,6 @@ class TestFancyStyle:
         assert "\033[" in result
 
 
-# ---------------------------------------------------------------------------
-# resolve_style
-# ---------------------------------------------------------------------------
 class TestResolveStyle:
     def test_none_returns_plain(self):
         assert isinstance(resolve_style(None), PlainStyle)

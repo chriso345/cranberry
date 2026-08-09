@@ -3,14 +3,12 @@ Tests for cranberry.registry
 """
 
 import pytest
+
 import cranberry as cb
 from cranberry.errors import CranberryPanic
-from cranberry.registry import extract_fields, collect_fields, check_global_clashes
+from cranberry.registry import check_global_clashes, collect_fields, extract_fields
 
 
-# ---------------------------------------------------------------------------
-# extract_fields
-# ---------------------------------------------------------------------------
 class TestExtractFields:
     def test_extracts_option(self):
         class Cmd:
@@ -74,9 +72,6 @@ class TestExtractFields:
         assert "child_opt" in child_fields
 
 
-# ---------------------------------------------------------------------------
-# collect_fields - MRO merging
-# ---------------------------------------------------------------------------
 class TestCollectFields:
     def test_collects_own_fields(self):
         class Cmd:
@@ -137,9 +132,6 @@ class TestCollectFields:
         assert "opt" in fields
 
 
-# ---------------------------------------------------------------------------
-# check_global_clashes
-# ---------------------------------------------------------------------------
 class TestCheckGlobalClashes:
     def test_no_clash_passes(self):
         global_fields = {"gflag": cb.flag("-g", "--global")}

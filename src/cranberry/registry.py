@@ -11,9 +11,6 @@ from cranberry.errors import panic
 from cranberry.fields import FieldSpec
 
 
-# ---------------------------------------------------------------------------
-# Internal helpers
-# ---------------------------------------------------------------------------
 def _is_cranberry_enum(tp: Any) -> bool:
     """Return *True* if *tp* is a class produced by ``@cb.enum``."""
     from cranberry.enum import CranberryEnum  # local import avoids cycle
@@ -55,9 +52,6 @@ def _resolve_field_type(spec: FieldSpec, annotation: Any) -> None:
         spec.type = annotation if annotation is not type(None) else str
 
 
-# ---------------------------------------------------------------------------
-# Public API
-# ---------------------------------------------------------------------------
 def extract_fields(cls: type) -> dict[str, FieldSpec]:
     """
     Return the :class:`FieldSpec` objects declared directly on *cls*
@@ -67,7 +61,7 @@ def extract_fields(cls: type) -> dict[str, FieldSpec]:
     """
     try:
         hints = get_type_hints(cls)
-    except Exception:
+    except Exception as _:  # noqa: BLE001
         hints = {}
 
     fields: dict[str, FieldSpec] = {}

@@ -4,29 +4,32 @@ Cranberry - a Python CLI framework.
 
 from __future__ import annotations
 
-from cranberry.errors import CranberryPanic, CranberryParseError, panic
-from cranberry.fields import FieldSpec, option, flag, arg, file, dir
-from cranberry.enum import CranberryEnum, enum
-from cranberry.style import Style
+from cranberry import parser as _parser_module
 from cranberry.context import ParseContext
 from cranberry.decorators import (
     app as _app_decorator,
+)
+from cranberry.decorators import (
     command,
-    subcommand,
     description,
+    footer,
     help,
     no_help,
+    subcommand,
     version,
-    style as _style_decorator,
-    footer,
+)
+from cranberry.decorators import (
     globals as _globals_decorator,
 )
-from cranberry import parser as _parser_module
+from cranberry.decorators import (
+    style as _style_decorator,
+)
+from cranberry.enum import CranberryEnum, enum
+from cranberry.errors import CranberryPanic, CranberryParseError, panic
+from cranberry.fields import FieldSpec, arg, dir, file, flag, option
+from cranberry.style import Style
 
 
-# ---------------------------------------------------------------------------
-# Wrap decorators that have side-effects (registering with the parser module).
-# ---------------------------------------------------------------------------
 def app(name: str):
     """
     Mark a function as the CLI entry-point.
@@ -67,9 +70,6 @@ def globals():
     return decorator
 
 
-# ---------------------------------------------------------------------------
-# parse_args - the one function users call at runtime
-# ---------------------------------------------------------------------------
 def parse_args(argv: list[str] | None = None) -> ParseContext:
     """
     Parse *argv* (or :data:`sys.argv`) and return a :class:`ParseContext`.
@@ -79,7 +79,7 @@ def parse_args(argv: list[str] | None = None) -> ParseContext:
     return _parser_module.parse_args(argv)
 
 
-__all__ = [
+__all__ = [  # noqa: RUF022
     # errors
     "CranberryPanic",
     "CranberryParseError",

@@ -4,8 +4,9 @@ Cranberry field specification and factory functions.
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Any, Callable
+from typing import Any
 
 
 @dataclass
@@ -59,9 +60,7 @@ class FieldSpec:
     validate: tuple[Callable[[Any], bool], str] | None = None
     exists: bool = False
 
-    # ------------------------------------------------------------------
     # Convenience helpers
-    # ------------------------------------------------------------------
     @property
     def is_required(self) -> bool:
         """Return *True* when no default has been supplied."""
@@ -89,9 +88,6 @@ class FieldSpec:
         return "VALUE"
 
 
-# ---------------------------------------------------------------------------
-# Public factory functions
-# ---------------------------------------------------------------------------
 def option(
     short: str | None,
     long: str | None,

@@ -11,14 +11,10 @@ from typing import Any
 from cranberry.context import ParseContext
 from cranberry.errors import CranberryParseError, panic
 from cranberry.fields import FieldSpec
+from cranberry.help_ import _cmd_name, render_help, render_version
 from cranberry.registry import collect_fields
 from cranberry.style import Style, resolve_style
-from cranberry.help_ import render_help, render_version, _cmd_name
 
-
-# ---------------------------------------------------------------------------
-# Module-level state
-# ---------------------------------------------------------------------------
 _app_fn: Any = None
 _globals_cls: type | None = None
 
@@ -33,9 +29,6 @@ def _register_globals(cls: type) -> None:
     _globals_cls = cls
 
 
-# ---------------------------------------------------------------------------
-# Coercion
-# ---------------------------------------------------------------------------
 def _coerce(raw: str, spec: FieldSpec, attr_name: str) -> Any:
     from cranberry.enum import CranberryEnum
 
@@ -47,6 +40,7 @@ def _coerce(raw: str, spec: FieldSpec, attr_name: str) -> Any:
         elif tp is bool:
             value = raw.lower() not in ("0", "false", "no", "off")
         else:
+            # pyrefly: ignore[unnecessary-type-conversion]
             value = tp(raw)
     except (ValueError, TypeError) as exc:
         raise CranberryParseError(
@@ -58,22 +52,15 @@ def _coerce(raw: str, spec: FieldSpec, attr_name: str) -> Any:
         if not predicate(value):
             raise CranberryParseError(f"Validation failed for {attr_name!r}: {message}")
 
-    if spec.kind == "file" and spec.exists:
-        if not os.path.isfile(str(value)):
-            raise CranberryParseError(f"File not found for {attr_name!r}: {value!r}")
+    if spec.kind == "file" and spec.exists and not os.path.isfile(str(value)):
+        raise CranberryParseError(f"File not found for {attr_name!r}: {value!r}")
 
-    if spec.kind == "dir" and spec.exists:
-        if not os.path.isdir(str(value)):
-            raise CranberryParseError(
-                f"Directory not found for {attr_name!r}: {value!r}"
-            )
+    if spec.kind == "dir" and spec.exists and not os.path.isdir(str(value)):
+        raise CranberryParseError(f"Directory not found for {attr_name!r}: {value!r}")
 
     return value
 
 
-# ---------------------------------------------------------------------------
-# HELP
-# ---------------------------------------------------------------------------
 def _print_help_and_exit(
     *,
     app_name: str,
@@ -107,9 +94,6 @@ def _print_help_and_exit(
     sys.exit(0)
 
 
-# ---------------------------------------------------------------------------
-# Command resolution (TREE PHASE)
-# ---------------------------------------------------------------------------
 def _resolve_command_path(
     argv: list[str],
     sub_map: dict[str, type],
@@ -134,9 +118,6 @@ def _resolve_command_path(
     return chain, argv[i:]
 
 
-# ---------------------------------------------------------------------------
-# LEAF PARSER (NO RECURSION)
-# ---------------------------------------------------------------------------
 def _parse_leaf_command(
     argv: list[str],
     fields: dict[str, FieldSpec],
@@ -246,9 +227,11 @@ def _parse_leaf_command(
         attr, spec = positional[pos_i]
         pos_vals[attr].append(token)
 
-        if spec.count == 1:
-            pos_i += 1
-        elif spec.count is not None and len(pos_vals[attr]) >= spec.count:
+        if (
+            spec.count == 1
+            or spec.count is not None
+            and len(pos_vals[attr]) >= spec.count
+        ):
             pos_i += 1
 
         i += 1
@@ -270,9 +253,6 @@ def _parse_leaf_command(
     return values
 
 
-# ---------------------------------------------------------------------------
-# Instantiate
-# ---------------------------------------------------------------------------
 def _instantiate(cls: type, values: dict[str, Any]) -> Any:
     obj = object.__new__(cls)
     for k, v in values.items():
@@ -280,9 +260,6 @@ def _instantiate(cls: type, values: dict[str, Any]) -> Any:
     return obj
 
 
-# ---------------------------------------------------------------------------
-# PUBLIC API (NEW PIPELINE)
-# ---------------------------------------------------------------------------
 def parse_args(argv: list[str] | None = None) -> ParseContext:
     if _app_fn is None:
         panic("No app entry-point registered")

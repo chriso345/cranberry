@@ -7,10 +7,9 @@ from __future__ import annotations
 import sys
 from typing import Any
 
-from cranberry.fields import FieldSpec
 from cranberry.errors import CranberryParseError
+from cranberry.fields import FieldSpec
 from cranberry.style import Style
-
 
 # Minimum gap (in spaces) between the widest left column and the help text.
 _COLUMN_GAP = 2
@@ -80,9 +79,6 @@ def _two_col(rows: list[tuple[str, str]], style: Style) -> str:
     return "\n".join(lines)
 
 
-# ---------------------------------------------------------------------------
-# Public entry points
-# ---------------------------------------------------------------------------
 def render_help(
     *,
     app_name: str,
@@ -249,7 +245,7 @@ def render_version(app_name: str, version_cfg: dict[str, Any], style: Style) -> 
             import importlib.metadata
 
             ver = importlib.metadata.version(app_name)
-        except Exception as _:
+        except Exception as _:  # noqa: BLE001
             ver = "UNKNOWN"
     elif isinstance(ver, str):
         pass
@@ -260,9 +256,6 @@ def render_version(app_name: str, version_cfg: dict[str, Any], style: Style) -> 
     sys.exit(0)
 
 
-# ---------------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------------
 def _cmd_name(cls: type) -> str:
     meta = getattr(cls, "__cb_meta__", {})
     return meta.get("name", cls.__name__.lower())

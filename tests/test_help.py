@@ -3,45 +3,42 @@ Tests for cranberry.help_
 """
 
 import pytest
+
+import cranberry as cb
+from cranberry.errors import CranberryParseError
 from cranberry.help_ import (
-    render_help,
-    render_version,
     _cmd_name,
     _strip_ansi,
     _two_col,
+    render_help,
+    render_version,
 )
 from cranberry.style import PlainStyle
-from cranberry.errors import CranberryParseError
-import cranberry as cb
-
 
 PLAIN = PlainStyle()
 
 
 def make_help(**kwargs):
     """Call render_help with sensible defaults."""
-    defaults = dict(
-        app_name="testapp",
-        command_name=None,
-        description=None,
-        global_fields={},
-        command_fields={},
-        subcommands=[],
-        has_help_flag=True,
-        has_help_subcommand=False,
-        has_version_flag=False,
-        has_version_subcommand=False,
-        footer_msg=None,
-        style=PLAIN,
-        parent_command=None,
-    )
+    defaults = {
+        "app_name": "testapp",
+        "command_name": None,
+        "description": None,
+        "global_fields": {},
+        "command_fields": {},
+        "subcommands": [],
+        "has_help_flag": True,
+        "has_help_subcommand": False,
+        "has_version_flag": False,
+        "has_version_subcommand": False,
+        "footer_msg": None,
+        "style": PLAIN,
+        "parent_command": None,
+    }
     defaults.update(kwargs)
     return render_help(**defaults)
 
 
-# ---------------------------------------------------------------------------
-# Usage line
-# ---------------------------------------------------------------------------
 class TestUsageLine:
     def test_contains_usage(self):
         assert "Usage:" in make_help()
@@ -75,9 +72,6 @@ class TestUsageLine:
         assert "NAME" in make_help(command_fields=fields)
 
 
-# ---------------------------------------------------------------------------
-# Sections
-# ---------------------------------------------------------------------------
 class TestSections:
     def test_commands_section_present_when_subcommands(self):
         @cb.command("sub")
@@ -173,9 +167,6 @@ class TestSections:
         assert result.index("CLI tool description") < result.index("Commands:")
 
 
-# ---------------------------------------------------------------------------
-# _strip_ansi
-# ---------------------------------------------------------------------------
 class TestStripAnsi:
     def test_strips_color_codes(self):
         ansi = "\033[38;2;255;0;0mred\033[0m"
@@ -185,9 +176,6 @@ class TestStripAnsi:
         assert _strip_ansi("hello") == "hello"
 
 
-# ---------------------------------------------------------------------------
-# _two_col
-# ---------------------------------------------------------------------------
 class TestTwoCol:
     def test_empty_rows(self):
         assert _two_col([], PLAIN) == ""
@@ -202,9 +190,6 @@ class TestTwoCol:
         assert col_short == col_long
 
 
-# ---------------------------------------------------------------------------
-# _cmd_name
-# ---------------------------------------------------------------------------
 class TestCmdName:
     def test_name_from_meta(self):
         @cb.command("my-command")
@@ -220,9 +205,6 @@ class TestCmdName:
         assert _cmd_name(SomeCommand) == "somecommand"
 
 
-# ---------------------------------------------------------------------------
-# render_version
-# ---------------------------------------------------------------------------
 class TestRenderVersion:
     def test_literal_version_output(self, capsys):
         with pytest.raises(SystemExit):
