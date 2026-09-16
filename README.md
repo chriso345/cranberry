@@ -21,6 +21,9 @@
 ## Installation
 
 ```bash
+pip install cranberry-cli
+
+# Installing from source
 pip install git+https://github.com/chriso345/cranberry
 ```
 
