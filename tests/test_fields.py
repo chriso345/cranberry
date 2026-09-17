@@ -2,6 +2,8 @@
 Tests for cranberry.fields
 """
 
+import pytest
+
 import cranberry as cb
 from cranberry.fields import FieldSpec
 
@@ -28,11 +30,11 @@ class TestFieldSpecProperties:
         assert spec.metavar == "VALUE"
 
     def test_is_required_true(self):
-        spec = cb.option("-o", "--opt", required=True)
+        spec = cb.option("-o", "--opt")
         assert spec.is_required is True
 
     def test_is_required_false(self):
-        spec = cb.option("-o", "--opt")
+        spec = cb.option("-o", "--opt", default="x")
         assert spec.is_required is False
 
 
@@ -147,3 +149,91 @@ class TestDirFactory:
 
     def test_exists_true(self):
         assert cb.dir("-d", "--dir", exists=True).exists is True
+
+
+class TestFieldsManualConstruction:
+    def test_required_field_supplied(self):
+        class Cmd(cb.Fields):
+            name: str = cb.arg()
+
+        cmd = Cmd(name="Ada")
+        assert cmd.name == "Ada"
+
+    def test_missing_required_field_panics(self):
+        class Cmd(cb.Fields):
+            name: str = cb.arg()
+
+        with pytest.raises(cb.CranberryPanic):
+            Cmd()
+
+    def test_optional_field_defaults(self):
+        class Cmd(cb.Fields):
+            flag: bool = cb.flag("-f", "--flag")
+
+        cmd = Cmd()
+        assert cmd.flag is False
+
+    def test_optional_field_overridden(self):
+        class Cmd(cb.Fields):
+            flag: bool = cb.flag("-f", "--flag")
+
+        cmd = Cmd(flag=True)
+        assert cmd.flag is True
+
+    def test_unexpected_kwarg_panics(self):
+        class Cmd(cb.Fields):
+            name: str = cb.arg()
+
+        with pytest.raises(cb.CranberryPanic):
+            Cmd(name="Ada", bogus=1)
+
+    def test_fields_merged_across_mixins(self):
+        class Mixin(cb.Fields):
+            shared: str = cb.option("-s", "--shared")
+
+        class Cmd(Mixin):
+            own: str = cb.arg()
+
+        cmd = Cmd(shared="a", own="b")
+        assert cmd.shared == "a"
+        assert cmd.own == "b"
+
+    def test_subcommand_defaults_to_none_without_any_declaration(self):
+        class Child(cb.Fields):
+            pass
+
+        class Cmd(cb.Fields):
+            name: str = cb.arg()
+
+        cmd = Cmd(name="Ada")
+        assert cmd.subcommand is None
+
+    def test_subcommand_accepts_explicit_none_via_attribute(self):
+        class Cmd(cb.Fields):
+            name: str = cb.arg()
+
+        cmd = Cmd(name="Ada")
+        cmd.subcommand = None
+        assert cmd.subcommand is None
+
+    def test_subcommand_accepts_instance_via_attribute(self):
+        class Child(cb.Fields):
+            pass
+
+        class Cmd(cb.Fields):
+            name: str = cb.arg()
+
+        child = Child()
+        cmd = Cmd(name="Ada")
+        cmd.subcommand = child
+        assert cmd.subcommand is child
+
+    def test_subcommand_is_not_a_constructor_keyword(self):
+        class Child(cb.Fields):
+            pass
+
+        class Cmd(cb.Fields):
+            name: str = cb.arg()
+
+        with pytest.raises(cb.CranberryPanic):
+            Cmd(name="Ada", subcommand=Child())

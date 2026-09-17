@@ -4,32 +4,46 @@ Cranberry parse context.
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Generic, TypeVar
+
+G = TypeVar("G")
 
 
-class ParseContext:
+class ParseContext(Generic[G]):
     """
     The result of a successful ``cb.parse_args()`` call.
 
-    Attributes are set dynamically:
-
     * ``ctx.command`` - the instantiated command class (e.g. ``SubCommand``),
       or *None* when the user ran the app without a subcommand.
-    * ``ctx.<global_field>`` - one attribute per global option / flag,
-      accessible directly on the context.
+    * ``ctx.globals`` - an instance of the ``@cb.globals()`` class, holding
+      one attribute per global option / flag. Pass ``globals_cls=Globals``
+      to :func:`cranberry.parse_args` so type checkers know ``ctx.globals``
+      is a ``Globals`` rather than ``Any``.
+    * For convenience the same global attributes are *also* flattened onto
+      the context itself (``ctx.<global_field>``), matching Cranberry's
+      historical behaviour. This flattening is done with ``setattr`` at
+      runtime, so it is invisible to type checkers/LSPs; prefer
+      ``ctx.globals.<field>`` in code you want statically checked.
 
     Command-specific fields live on the command instance itself:
     ``ctx.command.option``, ``ctx.command.nested_option``, etc.
     """
 
-    def __init__(self, command: Any | None, globals_: dict[str, Any]) -> None:
+    def __init__(self, command: Any | None, globals_obj: G) -> None:
         self.command: Any | None = command
-        for key, value in globals_.items():
-            setattr(self, key, value)
+        self.globals: G = globals_obj
+        if globals_obj is not None:
+            for key, value in vars(globals_obj).items():
+                setattr(self, key, value)
 
     def __repr__(self) -> str:
-        attrs = {k: v for k, v in self.__dict__.items() if k != "command"}
-        return f"ParseContext(command={self.command!r}, globals={attrs!r})"
+        attrs = {
+            k: v for k, v in self.__dict__.items() if k not in ("command", "globals")
+        }
+        return (
+            f"ParseContext(command={self.command!r}, "
+            f"globals={self.globals!r}, flattened={attrs!r})"
+        )
 
     def help(self, command: Any | None = None) -> str:
         """

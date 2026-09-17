@@ -4,6 +4,8 @@ Cranberry - a Python CLI framework.
 
 from __future__ import annotations
 
+from typing import Any, TypeVar, overload
+
 from cranberry import parser as _parser_module
 from cranberry.context import ParseContext
 from cranberry.decorators import (
@@ -26,8 +28,18 @@ from cranberry.decorators import (
 )
 from cranberry.enum import CranberryEnum, enum
 from cranberry.errors import CranberryPanic, CranberryParseError, panic
-from cranberry.fields import FieldSpec, arg, dir, file, flag, option
+from cranberry.fields import (
+    Fields,
+    FieldSpec,
+    arg,
+    dir,
+    file,
+    flag,
+    option,
+)
 from cranberry.style import Style
+
+G = TypeVar("G")
 
 
 def app(name: str):
@@ -70,12 +82,30 @@ def globals():
     return decorator
 
 
-def parse_args(argv: list[str] | None = None) -> ParseContext:
+@overload
+def parse_args(argv: list[str] | None = None) -> ParseContext[Any]: ...
+@overload
+def parse_args(
+    argv: list[str] | None = None, *, globals_cls: type[G]
+) -> ParseContext[G]: ...
+def parse_args(
+    argv: list[str] | None = None, *, globals_cls: type[Any] | None = None
+) -> ParseContext[Any]:
     """
     Parse *argv* (or :data:`sys.argv`) and return a :class:`ParseContext`.
 
-    Must be called inside the function decorated with :func:`app`.
+    Must be called inside the function decorated with :func:`app`. Pass
+    ``globals_cls=Globals`` (the same class decorated with :func:`globals`)
+    so type checkers infer ``ctx.globals`` as ``Globals`` instead of
+    ``Any``:
+
+    .. code-block:: python
+
+        ctx = cb.parse_args(globals_cls=Globals)
+        reveal_type(ctx.globals)  # Globals
     """
+    if globals_cls is not None:
+        return _parser_module.parse_args(argv, globals_cls=globals_cls)
     return _parser_module.parse_args(argv)
 
 
@@ -91,6 +121,7 @@ __all__ = [  # noqa: RUF022
     "arg",
     "file",
     "dir",
+    "Fields",
     # enum
     "CranberryEnum",
     "enum",

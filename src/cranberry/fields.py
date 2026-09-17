@@ -6,7 +6,9 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, dataclass_transform
+
+_UNSET: Any = object()
 
 
 @dataclass
@@ -50,9 +52,7 @@ class FieldSpec:
     default: Any = field(default_factory=lambda: None)
     stackable: bool = False  # for flags only
     type: Any = None  # filled in by registry from the class annotation
-    required: bool = (
-        False  # for args, this is just a convenience property based on default
-    )
+    required: bool = False  # True when the factory call omitted `default=`
     # arg-specific
     count: int | None = 1
     enforce_count: bool = False
@@ -93,20 +93,26 @@ def option(
     long: str | None,
     *,
     help: str = "",
-    default: Any = None,
+    default: Any = _UNSET,
     type: Any = None,
-    required: bool = False,
     validate: tuple[Callable[[Any], bool], str] | None = None,
 ) -> Any:
-    """Declare a named option that accepts a value (``-o VALUE`` / ``--option VALUE``)."""
+    """
+    Declare a named option that accepts a value (``-o VALUE`` / ``--option VALUE``).
+
+    Omit ``default`` to make the field required - both at the CLI (it's
+    marked required in ``--help``) and when constructing the class
+    manually (``cb.Fields.__init__`` raises if it's missing, and type
+    checkers flag a missing-argument error).
+    """
     return FieldSpec(
         kind="option",
         short=short,
         long=long,
         help=help,
-        default=default,
+        default=None if default is _UNSET else default,
         type=type,
-        required=required,
+        required=default is _UNSET,
         validate=validate,
     )
 
@@ -134,20 +140,19 @@ def flag(
 def arg(
     *,
     help: str = "",
-    default: Any = None,
+    default: Any = _UNSET,
     type: Any = None,
-    required: bool = False,
     count: int | None = 1,
     enforce_count: bool = False,
     validate: tuple[Callable[[Any], bool], str] | None = None,
 ) -> Any:
-    """Declare a positional argument."""
+    """Declare a positional argument. Omit ``default`` to make it required."""
     return FieldSpec(
         kind="arg",
         help=help,
-        default=default,
+        default=None if default is _UNSET else default,
         type=type,
-        required=required,
+        required=default is _UNSET,
         count=count,
         enforce_count=enforce_count,
         validate=validate,
@@ -159,20 +164,23 @@ def file(
     long: str | None,
     *,
     help: str = "",
-    default: Any = None,
-    required: bool = False,
+    default: Any = _UNSET,
     exists: bool = False,
     validate: tuple[Callable[[Any], bool], str] | None = None,
 ) -> Any:
-    """Declare an option whose value must be a filesystem path to a file."""
+    """
+    Declare an option whose value must be a filesystem path to a file.
+
+    Omit ``default`` to make the field required.
+    """
     return FieldSpec(
         kind="file",
         short=short,
         long=long,
         help=help,
-        default=default,
+        default=None if default is _UNSET else default,
         type=str,
-        required=required,
+        required=default is _UNSET,
         exists=exists,
         validate=validate,
     )
@@ -183,20 +191,66 @@ def dir(
     long: str | None,
     *,
     help: str = "",
-    default: Any = None,
-    required: bool = False,
+    default: Any = _UNSET,
     exists: bool = False,
     validate: tuple[Callable[[Any], bool], str] | None = None,
 ) -> Any:
-    """Declare an option whose value must be a filesystem path to a directory."""
+    """
+    Declare an option whose value must be a filesystem path to a directory.
+
+    Omit ``default`` to make the field required.
+    """
     return FieldSpec(
         kind="dir",
         short=short,
         long=long,
         help=help,
-        default=default,
+        default=None if default is _UNSET else default,
         type=str,
-        required=required,
+        required=default is _UNSET,
         exists=exists,
         validate=validate,
     )
+
+
+@dataclass_transform(
+    eq_default=False,
+    kw_only_default=True,
+    field_specifiers=(option, arg, file, dir),
+)
+class Fields:
+    """
+    Base class for any class that declares Cranberry fields.
+    """
+
+    subcommand: Any | None = None
+
+    def __init__(self, **kwargs: Any) -> None:
+        _init_from_fields(self, kwargs)
+
+
+def _init_from_fields(instance: Any, kwargs: dict[str, Any]) -> None:
+    from cranberry.errors import panic  # local import avoids a cycle
+    from cranberry.registry import collect_fields  # local import avoids a cycle
+
+    cls = type(instance)
+    fields = collect_fields(cls)
+    missing = []
+    for name, spec in fields.items():
+        if name in kwargs:
+            setattr(instance, name, kwargs.pop(name))
+        elif spec.required:
+            missing.append(name)
+        else:
+            setattr(instance, name, spec.default)
+
+    if missing:
+        panic(
+            f"{cls.__name__}() missing required argument(s): "
+            + ", ".join(repr(m) for m in missing)
+        )
+    if kwargs:
+        panic(
+            f"{cls.__name__}() got unexpected keyword argument(s): "
+            + ", ".join(repr(k) for k in kwargs)
+        )
