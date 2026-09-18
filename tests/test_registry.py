@@ -71,6 +71,26 @@ class TestExtractFields:
         assert "base_opt" not in child_fields
         assert "child_opt" in child_fields
 
+    def test_bare_annotation_is_ignored(self):
+        class Child:
+            pass
+
+        class Cmd:
+            subcommand: Child | None  # no assigned value -> not a field
+
+        fields = extract_fields(Cmd)
+        assert "subcommand" not in fields
+
+    def test_plain_attribute_value_is_ignored(self):
+        # `subcommand` is now a plain attribute declared once on
+        # `cb.Fields` (not a FieldSpec), so extract_fields correctly
+        # doesn't pick it up as a CLI-parseable field.
+        class Cmd:
+            subcommand = None
+
+        fields = extract_fields(Cmd)
+        assert "subcommand" not in fields
+
 
 class TestCollectFields:
     def test_collects_own_fields(self):

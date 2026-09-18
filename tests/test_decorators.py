@@ -59,6 +59,8 @@ class TestSubcommandDecorator:
         assert A in Parent.__cb_meta__["subcommands"]
         assert B in Parent.__cb_meta__["subcommands"]
 
+
+class TestSubcommandStacking:
     def test_stacking_appends(self):
         @cb.command("a")
         class A:

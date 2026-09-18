@@ -59,14 +59,14 @@ class Location:
 
 @cb.command("nested")
 @cb.description("A nested subcommand (not flattened).")
-class NestedCommand:
+class NestedCommand(cb.Fields):
     nested_flag: bool = cb.flag("-nf", "--nested-flag", help="A nested flag")
 
 
 @cb.command("sub")
 @cb.description("Primary subcommand demonstrating most features.")
 @cb.subcommand(NestedCommand)
-class SubCommand(FlattenedNested):
+class SubCommand(FlattenedNested, cb.Fields):
     # Options / flags
     option: str = cb.option("-o", "--option", help="A simple option")
     flag: bool = cb.flag("-f", "--flag", help="A boolean flag", stackable=True)
@@ -96,7 +96,7 @@ class SubCommand(FlattenedNested):
 
 @cb.command("alternate")
 @cb.description("Simpler alternative command.")
-class AlternateCommand:
+class AlternateCommand(cb.Fields):
     alternate_option: str = cb.option(
         "-a", "--alternate-option", help="An alternate option"
     )
@@ -117,27 +117,25 @@ class Globals:
 @cb.style("colorful")
 @cb.footer("Thanks for trying Cranberry!")
 def main():
-    ctx = cb.parse_args()
+    ctx = cb.parse_args(globals_cls=Globals)
 
     # Dispatch
     match ctx.command:
         case SubCommand() as cmd:
-            # TODO: This is a bit messy, therefore we need a better way to detect/display nested subcommands.
             print("-> SubCommand")
-            try:
-                if cmd.subcommand:  # pyrefly: ignore[missing-attribute]  # noqa: SIM102
-                    if cmd.subcommand:
-                        print("  -> NestedCommand")
-                        print(f"    nested_flag   = {cmd.subcommand.nested_flag}")  # pyrefly: ignore[missing-attribute]
-            except Exception as _:  # noqa: BLE001
-                print(f"    option        = {cmd.option}")
-                print(f"    flag          = {cmd.flag}")
-                print(f"    file          = {cmd.file}")
-                print(f"    directory     = {cmd.directory}")
-                print(f"    name          = {cmd.name}")
-                print(f"    age           = {cmd.age}")
-                print(f"    locations     = {cmd.locations}")
-                print(f"    nested_option = {cmd.nested_option}")
+            match cmd.subcommand:
+                case NestedCommand() as nested:
+                    print("  -> NestedCommand")
+                    print(f"    nested_flag   = {nested.nested_flag}")
+                case None:
+                    print(f"    option        = {cmd.option}")
+                    print(f"    flag          = {cmd.flag}")
+                    print(f"    file          = {cmd.file}")
+                    print(f"    directory     = {cmd.directory}")
+                    print(f"    name          = {cmd.name}")
+                    print(f"    age           = {cmd.age}")
+                    print(f"    locations     = {cmd.locations}")
+                    print(f"    nested_option = {cmd.nested_option}")
 
         case AlternateCommand() as cmd:
             print("-> AlternateCommand")
@@ -146,8 +144,7 @@ def main():
         case None:
             print(ctx.help())
 
-    # TODO: This is a bit messy as it is dynamically added to the context.
-    print(f"\nglobal_flag = {ctx.global_flag}")  # pyrefly: ignore[missing-attribute]
+    print(f"\nglobal_flag = {ctx.globals.global_flag}")
 
 
 if __name__ == "__main__":

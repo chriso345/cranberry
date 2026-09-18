@@ -46,10 +46,8 @@ class Format:
 
 @cb.command("export")
 @cb.description("Export data in a chosen format.")
-class ExportCommand:
-    output: str = cb.option(
-        "-o", "--output", help="Destination file path", required=True
-    )
+class ExportCommand(cb.Fields):
+    output: str = cb.option("-o", "--output", help="Destination file path")
     fmt: Format = cb.option(
         "-f", "--format", help="Output format", type=Format, default="json"
     )
@@ -58,14 +56,12 @@ class ExportCommand:
 
 @cb.command("validate")
 @cb.description("Validate an input file.")
-class ValidateCommand:
-    path: str = cb.file(
-        "-p", "--path", help="File to validate", exists=True, required=True
-    )
+class ValidateCommand(cb.Fields):
+    path: str = cb.file("-p", "--path", help="File to validate", exists=True)
 
 
 @cb.globals()
-class GlobalOptions:
+class GlobalOptions(cb.Fields):
     verbose: bool = cb.flag("-v", "--verbose", help="Enable verbose logging")
 
 
@@ -77,7 +73,7 @@ class GlobalOptions:
 @cb.style("colorful")
 @cb.footer("Run 'myapp help' for usage details.")
 def main():
-    ctx = cb.parse_args()
+    ctx = cb.parse_args(globals_cls=GlobalOptions)
 
     match ctx.command:
         case ExportCommand() as cmd:
@@ -88,7 +84,7 @@ def main():
         case None:
             print("No subcommand given. Try --help.")
 
-    if ctx.verbose:  # pyrefly: ignore[missing-attribute]
+    if ctx.globals.verbose:
         print("[verbose mode enabled]")
 
 
@@ -99,6 +95,8 @@ if __name__ == "__main__":
 Running `myapp --help` produces:
 
 ```
+A sample CLI built with cranberry.
+
 Usage: myapp [OPTIONS] <COMMAND>
 
 Commands:

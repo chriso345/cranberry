@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import os
 import sys
-from typing import Any
+from typing import Any, TypeVar, overload
 
 from cranberry.context import ParseContext
 from cranberry.errors import CranberryParseError, panic
@@ -14,6 +14,8 @@ from cranberry.fields import FieldSpec
 from cranberry.help_ import _cmd_name, render_help, render_version
 from cranberry.registry import collect_fields
 from cranberry.style import Style, resolve_style
+
+G = TypeVar("G")
 
 _app_fn: Any = None
 _globals_cls: type | None = None
@@ -260,7 +262,25 @@ def _instantiate(cls: type, values: dict[str, Any]) -> Any:
     return obj
 
 
-def parse_args(argv: list[str] | None = None) -> ParseContext:
+def _make_globals_obj(global_values: dict[str, Any]) -> Any:
+    """Build a real instance of the registered ``@cb.globals()`` class."""
+    if _globals_cls is None:
+        return None
+    return _instantiate(_globals_cls, global_values)
+
+
+@overload
+def parse_args(argv: list[str] | None = None) -> ParseContext[Any]: ...
+@overload
+def parse_args(
+    argv: list[str] | None = None, *, globals_cls: type[G]
+) -> ParseContext[G]: ...
+def parse_args(
+    argv: list[str] | None = None, *, globals_cls: type[Any] | None = None
+) -> ParseContext[Any]:
+    """
+    Parse *argv* and return a :class:`~cranberry.context.ParseContext`.
+    """
     if _app_fn is None:
         panic("No app entry-point registered")
 
@@ -272,6 +292,13 @@ def parse_args(argv: list[str] | None = None) -> ParseContext:
     subcommands = meta.get("subcommands", [])
     style = resolve_style(meta.get("style"))
     footer_msg = meta.get("footer_message")
+
+    if globals_cls is not None and globals_cls is not _globals_cls:
+        panic(
+            f"parse_args(globals_cls={globals_cls.__name__!r}) does not match "
+            f"the class registered via @cb.globals() "
+            f"({_globals_cls.__name__ if _globals_cls else None!r})."
+        )
 
     global_fields: dict[str, FieldSpec] = {}
     if _globals_cls:
@@ -372,7 +399,7 @@ def parse_args(argv: list[str] | None = None) -> ParseContext:
 
         if subcommands and stripped:
             raise CranberryParseError(f"Unknown command {stripped[0]!r}")
-        return ParseContext(command=None, globals_=global_values)
+        return ParseContext(command=None, globals_obj=_make_globals_obj(global_values))
 
     leaf_cls = chain[-1]
     fields = collect_fields(leaf_cls)
@@ -400,4 +427,4 @@ def parse_args(argv: list[str] | None = None) -> ParseContext:
         inst.subcommand = current
         current = inst
 
-    return ParseContext(command=current, globals_=global_values)
+    return ParseContext(command=current, globals_obj=_make_globals_obj(global_values))
