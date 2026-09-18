@@ -41,7 +41,7 @@ Show version
 import cranberry as cb
 
 
-class FlattenedNested(cb.Fields):
+class FlattenedNested:
     """Fields mixed directly into parent commands."""
 
     nested_option: str = cb.option(
@@ -66,7 +66,7 @@ class NestedCommand(cb.Fields):
 @cb.command("sub")
 @cb.description("Primary subcommand demonstrating most features.")
 @cb.subcommand(NestedCommand)
-class SubCommand(FlattenedNested):
+class SubCommand(FlattenedNested, cb.Fields):
     # Options / flags
     option: str = cb.option("-o", "--option", help="A simple option")
     flag: bool = cb.flag("-f", "--flag", help="A boolean flag", stackable=True)
@@ -103,7 +103,7 @@ class AlternateCommand(cb.Fields):
 
 
 @cb.globals()
-class Globals(cb.Fields):
+class Globals:
     global_flag: bool = cb.flag(
         "-g", "--global-flag", help="Enable global flag", default=False
     )
