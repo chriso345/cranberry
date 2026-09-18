@@ -116,8 +116,8 @@ toml = [
 ]
 
 [[package]]
-name = "cranberry"
-version = "0.0.1"
+name = "cranberry-cli"
+version = "0.1.0"
 source = { editable = "." }
 
 [package.dev-dependencies]
